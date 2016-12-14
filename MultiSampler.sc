@@ -18,11 +18,16 @@ MultiSampler {
         }
         ^super.newCopyArgs(bufs, -1);
     }
-    play {
+
+    getBuf {
         var n = this.bufs.size;
         var idx = if(n > 2, n.xrand(lastPlayed), n.rand);
-        "playing idx %\n".postf(idx);
         lastPlayed = idx;
-        bufs[idx].play;
+        ^bufs[idx];
+    }
+
+    play {
+        | velocity=1 |
+        this.getBuf.play(mul: velocity);
     }
 }
