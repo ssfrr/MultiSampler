@@ -5,20 +5,26 @@ MultiSampler is a class to load a folder full of samples. Each time the sampler 
 MultiSampler {
     var <bufs, lastPlayed;
     *new {
-        | server, samplePath |
+        | samplePath, server |
         var path = if(samplePath.class == PathName, samplePath, { PathName(samplePath) });
         var bufs = [];
+        server.isNil.if { server = Server.default };
 
         path.files.do {
             | file |
             // WARNING: we're not waiting for this to be confirmed from the server, so the buffers
             // won't be available immediately for playback
-            // WARNING: there's no handling here for a file that can't be loaded (e.g. not a sound file)
-            bufs = bufs.add(Buffer.read(server, file.fullPath));
+            var isAudio = ["wav", "ogg", "mp3"].any { | ext |
+                file.extension == ext;
+            };
+            isAudio.if {
+                bufs = bufs.add(Buffer.read(server, file.fullPath));
+            };
         }
         ^super.newCopyArgs(bufs, -1);
     }
 
+    // return a random buffer in the collection
     getBuf {
         var n = this.bufs.size;
         var idx = if(n > 2, n.xrand(lastPlayed), n.rand);
